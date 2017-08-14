@@ -9,6 +9,7 @@ function Database:constructor()
 end
 
 function Database:exec(...)
+	outputConsole(dbPrepareString(self.handle,...))
 	dbExec(self.handle,...)
 end
 
@@ -17,7 +18,6 @@ function Database:query(callback,query,...)
 end
 
 function Database:queryCallback(callback,queryHandle)
-	outputServerLog(type(callback))
 	local results = dbPoll(queryHandle,0)
 	callback(results)
 end

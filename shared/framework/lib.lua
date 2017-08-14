@@ -19,9 +19,10 @@ function inherit(baseClass)
 end
 
 function new(class,...)
-	local instance = { class = class }
+	local instance = { class = class, isClass = false }
 	setmetatable(instance,{
-		__index = class
+		__index = class,
+		__newindex = class.__newindex
 	})
 	if rawget(class,"constructor") then
 		class.constructor(instance,...)
@@ -32,12 +33,11 @@ function new(class,...)
 end
 
 function newSingleton(class,...)
-	local instance = { class = class }
+	local instance = { class = class, isClass = false }
 	setmetatable(instance,{
-		__index = class
+		__index = class,
 	})
 	
-	instance.isClass = false
 	return instance
 end
 
@@ -49,7 +49,7 @@ function callConstructors(instance,class,...)
 		end
 		current = current.super
 	end
-	
+
 	if rawget(class,"constructor") then
 		class.constructor(instance,...)
 	end
@@ -57,6 +57,14 @@ end
 
 
 function delete(instance,...)
+	local current = class.super
+	while current do
+		if rawget(current,"subDestructor") then
+			current.subDestructor(instance,...)
+		end
+		current = current.super
+	end
+
 	if rawget(self, "destructor") then
 		self:destructor(...)
 	end

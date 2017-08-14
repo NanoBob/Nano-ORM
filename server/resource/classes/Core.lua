@@ -4,6 +4,8 @@ function Core:constructor()
 	self.x = 5
 	setTimer(self.testMethod.bind(self),1000,1,"hey")
 	Vehicle:new(1)
+	local clover = Vehicle:new(nil,542,0,0,3,0,0,0)
+	clover:save()
 end
 
 function Core:testMethod(arg)

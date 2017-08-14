@@ -1,0 +1,23 @@
+<meta>
+	<info author="NanoBob" type="script" name="NanoORM" version="1.0" />
+	<oop>false</oop>
+
+	<script src="shared/config/config.lua" type="shared"/>
+	<script src="shared/framework/lib.lua" type="shared"/>
+	<script src="shared/framework/classes/Object.lua" type="shared"/>
+	<script src="shared/framework/classes/Object/Singleton.lua" type="shared"/>
+	<script src="shared/framework/debugMetatables/function.lua" type="shared"/>
+
+	<script src="server/main.lua" type="server"/>
+	<script src="server/config/database.lua" type="server"/>
+	<script src="server/framework/classes/Database.lua" type="server"/>
+	<script src="server/framework/classes/DbClass.lua" type="server"/>
+	<script src="server/framework/classes/FrameworkCore.lua" type="server"/>
+	<script src="server/framework/classes/InstanceVariable.lua" type="server"/>
+	<script src="server/resource/classes/Core.lua" type="server"/>
+	<script src="server/resource/classes/Vehicle.lua" type="server"/>
+
+
+
+
+</meta>
