@@ -1,4 +1,4 @@
-Singleton = inherit(Object)
+Singleton = inherit(Object,"Singleton")
 
 function Singleton:new(...)
 	if self.instance then

@@ -1,7 +1,10 @@
-DbClass = inherit(Object)
+DbClass = inherit(Object,"DbClass")
 DbClass.dbVariables = {}
 
 function DbClass:onInherit(newClass)
+
+	-- changing sub classes meta tables to support the custom instance variables
+
 	newClass.dbVariables = {}
 
 	newClass.__index = function(self,key)
@@ -56,8 +59,11 @@ function DbClass:constructor(id,...)
 		self:setupDatabase()
 	end
 	self.id = id
-	if id then
+	local args = { ... }
+	if id and args[1] == nil then
 		self:requestData()
+	elseif id and type(args[1] == "table") then
+		self:loadData(args[1])
 	else
 		self.exists = false
 		self:newConstructor(id,...)
@@ -66,11 +72,15 @@ end
 
 DbClass.subConstructor = DbClass.constructor
 
+-- placeholder functions to prevent errors if functions are not overwritten in sub classes
+
 function DbClass:newConstructor()  end
 function DbClass:dataConstructor() end
 
+-- creating the database
+
 function DbClass:setupDatabase()
-	self:getDatabase():exec(string.format("CREATE TABLE IF NOT EXISTS `%s` ( `id` INT ) ",self.class.tableName))
+	self:getDatabase():exec(string.format("CREATE TABLE IF NOT EXISTS `%s` ( `id` INT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id) )",self.class.tableName))
 	for key,dataType in pairs(self.class.dbVariables) do
 		self:getDatabase():exec(string.format("ALTER TABLE `%s` ADD `%s` %s;",self.class.tableName,key,dataType))
 	end
@@ -79,6 +89,8 @@ end
 function DbClass:getDatabase()
 	return FrameworkCore:new().database
 end
+
+-- loading from database
 
 function DbClass:requestData()
 	local query = "SELECT ";
@@ -114,11 +126,16 @@ function DbClass:loadVariable(key,value)
 	local vars = rawget(self,"instanceVariables")
 	if not vars then return end
 	local var = vars[key]
-	if not var then return end
+	if not var then
+		self[key] = value
+		var = vars[key]
+	end
 	local datatype = self.dbVariables[key]
 	if not datatype then return end
 	var:fromDatatype(value,datatype)
 end
+
+-- saving to database
 
 function DbClass:saveVariable(key)
 	local vars = rawget(self,"instanceVariables")
@@ -182,6 +199,8 @@ function DbClass:update()
 	end
 end
 
+-- database field functions
+
 function DbClass:registerDatabaseVariable(key,dataType)
 	local class = self
 	if not self.isClass then
@@ -198,5 +217,44 @@ function DbClass:int(key,digits)
 end
 
 function DbClass:float(key,digits,decimalDigits)
-	self:registerDatabaseVariable(key,string.format("FLOAT(%s,%s)",digits or "11",decimalDigits or "11"))
+	self:registerDatabaseVariable(key,string.format("FLOAT(%s,%s)",digits or "22",decimalDigits or "11"))
+end
+
+function DbClass:string(key)
+	self:registerDatabaseVariable(key,"text")
+end
+
+function DbClass:json(key)
+	self:registerDatabaseVariable(key,"json")
+end
+
+function DbClass:position()
+	self:registerDatabaseVariable("x","float(10,5)")
+	self:registerDatabaseVariable("y","float(10,5)")
+	self:registerDatabaseVariable("z","float(10,5)")
+end
+
+function DbClass:rotation()
+	self:registerDatabaseVariable("rx","float(7,4)")
+	self:registerDatabaseVariable("ry","float(7,4)")
+	self:registerDatabaseVariable("rz","float(7,4)")
+end
+
+function DbClass:rotation()
+	self:registerDatabaseVariable("rx","float(7,4)")
+	self:registerDatabaseVariable("ry","float(7,4)")
+	self:registerDatabaseVariable("rz","float(7,4)")
+end
+
+function DbClass:foreign()
+	self:registerDatabaseVariable("foreignType","text")
+	self:registerDatabaseVariable("foreignID","INT(11)")
+end
+
+-- relation methods
+
+-- selector methods
+
+function DbClass:select()
+	return Selector:new(self.class)
 end

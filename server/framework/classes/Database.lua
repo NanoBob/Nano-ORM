@@ -1,4 +1,4 @@
-Database = inherit(Object)
+Database = inherit(Object,"Database")
 
 function Database:constructor()
 	self.handle = dbConnect( "mysql", string.format("dbname=%s;host=%s;port=%s",config.database.schema,config.database.host,config.database.port), config.database.username, config.database.password, "suppress=1060" )

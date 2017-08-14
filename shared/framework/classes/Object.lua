@@ -1,6 +1,7 @@
 Object = {}
 
 Object.isClass = true
+registerClass(Object,"object")
 
 function Object:new(...)
 	return new(self,...)

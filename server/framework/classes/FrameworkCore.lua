@@ -1,4 +1,4 @@
-FrameworkCore = inherit(Singleton)
+FrameworkCore = inherit(Singleton,"FrameworkCore")
 
 function FrameworkCore:constructor()
 	outputDebugString("New framework core")

@@ -1,14 +1,10 @@
-Vehicle = inherit(DbClass)
+Vehicle = inherit(DbClass,"Vehicle")
 
 Vehicle.tableName = "vehicle"
 
 Vehicle:int("model")
-Vehicle:float("x")
-Vehicle:float("y")
-Vehicle:float("z")
-Vehicle:float("rx")
-Vehicle:float("ry")
-Vehicle:float("rz")
+Vehicle:position()
+Vehicle:rotation()
 
 function Vehicle:dataConstructor(success)
 	if success then

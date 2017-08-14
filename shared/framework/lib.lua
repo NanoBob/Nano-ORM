@@ -1,8 +1,14 @@
+local classes = {}
 
+function getClassByName(name)
+	return classes[name]
+end
 
+function registerClass(class,name)
+	classes[name] = class
+end
 
-
-function inherit(baseClass)
+function inherit(baseClass,name)
 	if type(baseClass) ~= "table" then
 		outputDebugString("Attempt to inherit non table value",1)
 		error(debug.traceback())
@@ -15,6 +21,7 @@ function inherit(baseClass)
 	if baseClass.onInherit then
 		baseClass:onInherit(class)
 	end
+	registerClass(class,name)
 	return class
 end
 

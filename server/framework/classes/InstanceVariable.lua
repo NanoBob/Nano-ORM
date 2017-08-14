@@ -1,4 +1,4 @@
-InstanceVariable = inherit(Object)
+InstanceVariable = inherit(Object,"InstanceVariable")
 
 function InstanceVariable:constructor(key,value)
 	self.key = key
