@@ -12,11 +12,13 @@ function inherit(baseClass)
 		__index = baseClass
 	}
 	setmetatable(class,class.metatable)
+	if baseClass.onInherit then
+		baseClass:onInherit(class)
+	end
 	return class
 end
 
 function new(class,...)
-	outputDebugString("New instance")
 	local instance = { class = class }
 	setmetatable(instance,{
 		__index = class
@@ -40,16 +42,16 @@ function newSingleton(class,...)
 end
 
 function callConstructors(instance,class,...)
-	if rawget(class,"constructor") then
-		class.constructor(instance,...)
-	end
-
-	local current = class
+	local current = class.super
 	while current do
 		if rawget(current,"subConstructor") then
 			current.subConstructor(instance,...)
 		end
-		current = current.__index
+		current = current.super
+	end
+	
+	if rawget(class,"constructor") then
+		class.constructor(instance,...)
 	end
 end
 

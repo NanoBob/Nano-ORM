@@ -1,6 +1,10 @@
 DbClass = inherit(Object)
 DbClass.dbVariables = {}
 
+function DbClass:onInherit(newClass)
+	newClass.dbVariables = {}
+end
+
 DbClass.metatable.__index = function(self,key)
 	if rawget(self,"isClass") == nil then
 		if rawget(self,key) then
@@ -52,7 +56,8 @@ function DbClass:constructor(id)
 		self:requestData()
 	end
 end
-DbClass.subConstructor = DbClass.constrcutor
+
+DbClass.subConstructor = DbClass.constructor
 
 function DbClass:setupDatabase()
 	self:getDatabase():exec(string.format("CREATE TABLE IF NOT EXISTS `%s` ( `id` INT ) ",self.class.tableName))
@@ -82,6 +87,9 @@ function DbClass:loadData(data)
 	for key,data in pairs(row) do
 		self[key] = data
 	end
+	if self.dataConstructor then
+		self:dataConstructor()
+	end
 end
 
 function DbClass:registerDatabaseVariable(key,dataType)
@@ -90,7 +98,7 @@ function DbClass:registerDatabaseVariable(key,dataType)
 		class = self.class
 	end
 	class.dbVariables[key] = dataType
-	if self.class.isDatabaseSetup then
+	if class.isDatabaseSetup then
 		self:getDatabase():exec(string.format("ALTER TABLE `%s` ADD `%s` %s;",class.tableName,key,dataType))
 	end
 end
