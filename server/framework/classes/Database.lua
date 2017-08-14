@@ -16,7 +16,8 @@ function Database:query(callback,query,...)
 	dbQuery(self.queryCallback.bind(self,callback),self.handle,query,...)
 end
 
-function Database:queryCallback(queryHandle,callback)
+function Database:queryCallback(callback,queryHandle)
+	outputServerLog(type(callback))
 	local results = dbPoll(queryHandle,0)
 	callback(results)
 end

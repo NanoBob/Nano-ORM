@@ -3,21 +3,9 @@ DbClass.dbVariables = {}
 
 function DbClass:onInherit(newClass)
 	newClass.dbVariables = {}
-end
 
-DbClass.metatable.__index = function(self,key)
-	if rawget(self,"isClass") == nil then
-		if rawget(self,key) then
-			return rawget(self,key)
-		end
-		if self.super then
-			return self.super[key]
-		end
-		return nil
-	else
-		local instanceVariables = rawget(self,"instanceVariables")
-		local instanceVariable = instanceVariables[key]
-		if not instanceVariable then
+	newClass.metatable.__index = function(self,key)
+		if rawget(self,"isClass") == nil then
 			if rawget(self,key) then
 				return rawget(self,key)
 			end
@@ -25,22 +13,34 @@ DbClass.metatable.__index = function(self,key)
 				return self.super[key]
 			end
 			return nil
+		else
+			local instanceVariables = rawget(self,"instanceVariables")
+			local instanceVariable = instanceVariables[key]
+			if not instanceVariable then
+				if rawget(self,key) then
+					return rawget(self,key)
+				end
+				if self.super then
+					return self.super[key]
+				end
+				return nil
+			end
+			return instanceVariable:get()
 		end
-		return instanceVariable:get()
 	end
-end
 
-DbClass.metatable.__newindex = function(self,key,value)
-	if self.isClass then
-		rawset(self,key,value)
-	else
-		local instanceVariables = rawget(self,"instanceVariables")
-		local instanceVariable = instanceVariables[key]
-		if not instanceVariable then
-			instanceVariables[key] = instanceVariable:new(key,value)
-			return
+	newClass.metatable.__newindex = function(self,key,value)
+		if self.isClass then
+			rawset(self,key,value)
+		else
+			local instanceVariables = rawget(self,"instanceVariables")
+			local instanceVariable = instanceVariables[key]
+			if not instanceVariable then
+				instanceVariables[key] = instanceVariable:new(key,value)
+				return
+			end
+			instanceVariable:set(value)
 		end
-		instanceVariable:set(value)
 	end
 end
 
@@ -84,11 +84,17 @@ end
 
 function DbClass:loadData(data)
 	local row = data[1]
-	for key,data in pairs(row) do
-		self[key] = data
-	end
-	if self.dataConstructor then
-		self:dataConstructor()
+	if row then
+		for key,data in pairs(row) do
+			self[key] = data
+		end
+		if self.dataConstructor then
+			self:dataConstructor(true)
+		end
+	else
+		if self.dataConstructor then
+			self:dataConstructor(false)
+		end
 	end
 end
 
@@ -105,4 +111,8 @@ end
 
 function DbClass:int(key,digits)
 	self:registerDatabaseVariable(key,string.format("INT(%s)",digits or "11"))
+end
+
+function DbClass:float(key,digits,decimalDigits)
+	self:registerDatabaseVariable(key,string.format("FLOAT(%s,%s)",digits or "11",decimalDigits or "11"))
 end
