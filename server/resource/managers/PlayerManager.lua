@@ -9,12 +9,6 @@ function PlayerManager:constructor()
 	addEventHandler("onPlayerQuit",getRootElement(),self.playerLeft.bind(self))
 end
 
-function PlayerManager:destructor()
-	for _,player in pairs(self.players) do
-		player:destroy()
-	end
-end
-
 function PlayerManager:playerJoined()
 	self:addPlayer(source)
 end

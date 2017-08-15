@@ -65,9 +65,14 @@ function DbClass:constructor(...)
 		self.exists = false
 		self:newConstructor(...)
 	end
+	DbClassManager:new():addInstance(self)
 end
 
 DbClass.subConstructor = DbClass.constructor
+
+function DbClass:subDestructor()
+	DbClassManager:new():removeInstance(self)
+end
 
 -- placeholder functions to prevent errors if functions are not overwritten in sub classes
 
@@ -260,16 +265,25 @@ function DbClass:json(key)
 	self:registerDatabaseVariable(key,"json")
 end
 
-function DbClass:position()
-	self:registerDatabaseVariable("x","float(10,5)")
-	self:registerDatabaseVariable("y","float(10,5)")
-	self:registerDatabaseVariable("z","float(10,5)")
+function DbClass:position(prefix)
+	local prefix = prefix or ""
+	self:registerDatabaseVariable(prefix .. "x","float(10,5)")
+	self:registerDatabaseVariable(prefix .. "y","float(10,5)")
+	self:registerDatabaseVariable(prefix .. "z","float(10,5)")
 end
 
-function DbClass:rotation()
-	self:registerDatabaseVariable("rx","float(7,4)")
-	self:registerDatabaseVariable("ry","float(7,4)")
-	self:registerDatabaseVariable("rz","float(7,4)")
+function DbClass:rotation(prefix)
+	local prefix = prefix or ""
+	self:registerDatabaseVariable(prefix .. "rx","float(7,4)")
+	self:registerDatabaseVariable(prefix .. "ry","float(7,4)")
+	self:registerDatabaseVariable(prefix .. "rz","float(7,4)")
+end
+
+function DbClass:rgb(prefix)
+	local prefix = prefix or ""
+	self:registerDatabaseVariable(prefix .. "r","INT(3)")
+	self:registerDatabaseVariable(prefix .. "g","INT(3)")
+	self:registerDatabaseVariable(prefix .. "b","INT(3)")
 end
 
 function DbClass:foreign(key)
@@ -301,7 +315,7 @@ end
 
 -- relation methods
 
-function DbClass:hasMany(callback,key,targetClass)
+function DbClass:has(callback,key,targetClass)
 	local targetClass = targetClass
 	if type(targetClass) == "string" then
 		targetClass = getClassFromName(targetClass)
@@ -309,6 +323,8 @@ function DbClass:hasMany(callback,key,targetClass)
 	local selector = targetClass:createSelector()
 	selector:where(self.id,key .. "ID"):get(callBack)
 end
+
+DbClass.hasMany = DbClass.has
 
 function DbClass:belongsTo(callback,key,targetClass)
 	local targetClass = targetClass
