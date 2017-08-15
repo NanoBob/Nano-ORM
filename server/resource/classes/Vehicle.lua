@@ -5,6 +5,7 @@ Vehicle.tableName = "vehicle"
 Vehicle:int("model")
 Vehicle:position()
 Vehicle:rotation()
+Vehicle:foreign("owner")
 
 function Vehicle:dataConstructor(success)
 	if success then
@@ -22,6 +23,10 @@ function Vehicle:newConstructor(model,x,y,z,rx,ry,rz)
 end
 
 function Vehicle:destructor()
+	self.x, self.y, self.z = getElementPosition(self.element)
+	self.rx, self.ry, self.rz = getElementRotation(self.element)
+	self.model = getElementModel(self.element)
+	self:save()
 	destroyElement(self.element)
 end
 

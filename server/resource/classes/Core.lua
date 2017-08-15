@@ -2,13 +2,13 @@ Core = inherit(Singleton,"Core")
 
 function Core:constructor()
 	self.managers = {}
-	--local clover = Vehicle(542,3,0,3,0,0,0)
-	--clover:save()
 
-	Vehicle:select():where("x",3):where("id",">",4):limit(1):get()
 
 	playerManager = PlayerManager:new()
 	self:addManager(playerManager)
+	vehicleManager = VehicleManager:new()
+	self:addManager(vehicleManager)
+
 end
 
 function Core:addManager(manager)

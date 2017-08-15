@@ -81,9 +81,9 @@ function DbClass:setupDatabase()
 	if not self.isClass then
 		class = self.class
 	end
-	self:getDatabase():exec(string.format("CREATE TABLE IF NOT EXISTS `%s` ( `id` INT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id) )",class.tableName))
+	self:getDatabase():create(string.format("CREATE TABLE IF NOT EXISTS `%s` ( `id` INT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id) )",class.tableName))
 	for key,dataType in pairs(class.dbVariables) do
-		self:getDatabase():exec(string.format("ALTER TABLE `%s` ADD `%s` %s;",class.tableName,key,dataType))
+		self:getDatabase():create(string.format("ALTER TABLE `%s` ADD `%s` %s;",class.tableName,key,dataType))
 	end
 end
 
@@ -166,6 +166,7 @@ function DbClass:save(callback)
 end
 
 function DbClass:insert(callback)
+	self.exists = true
 	local queryCache = {}
 	for key,_ in pairs(self.class.dbVariables) do
 		queryCache[#queryCache + 1] = { key = key, var = { self:saveVariable(key) } }
@@ -204,7 +205,7 @@ function DbClass:handleInsert(callback,results)
 	local id = results[1][3]
 	self.id = id
 	if type(callback) == "function" then
-		callback(id)
+		callback(self,id)
 	end
 end
 
@@ -224,6 +225,8 @@ function DbClass:update()
 	end
 	if query ~= "UPDATE `" .. self.tableName .. "`\n SET " then
 		query = query:sub(1,query:len() - 2) 
+		query = query .. " \n WHERE id = ?"
+		execArgs[#execArgs + 1] = self.id
 		self:getDatabase():exec(query,unpack(execArgs))
 	end
 end
@@ -237,7 +240,7 @@ function DbClass:registerDatabaseVariable(key,dataType)
 	end
 	class.dbVariables[key] = dataType
 	if class.isDatabaseSetup then
-		self:getDatabase():exec(string.format("ALTER TABLE `%s` ADD `%s` %s;",class.tableName,key,dataType))
+		self:getDatabase():create(string.format("ALTER TABLE `%s` ADD `%s` %s;",class.tableName,key,dataType))
 	end
 end
 
@@ -269,12 +272,8 @@ function DbClass:rotation()
 	self:registerDatabaseVariable("rz","float(7,4)")
 end
 
-function DbClass:foreign(class)
-	local key = class
-	if type(class == "table") then
-		key = class.className
-	end
-	self:registerDatabaseVariable("foreign" .. key .. "ID","INT(11)")
+function DbClass:foreign(key)
+	self:registerDatabaseVariable(key .. "ID","INT(11)")
 end
 
 -- selector methods
@@ -302,14 +301,20 @@ end
 
 -- relation methods
 
-function DbClass:hasMany(callback,className)
-	local targetClass = getClassFromName(className)
+function DbClass:hasMany(callback,key,targetClass)
+	local targetClass = targetClass
+	if type(targetClass) == "string" then
+		targetClass = getClassFromName(targetClass)
+	end
 	local selector = targetClass:createSelector()
-	selector:where(self.id,"foreign" .. self.tableName .. "ID"):get(callBack)
+	selector:where(self.id,key .. "ID"):get(callBack)
 end
 
-function DbClass:belongsTo(callback,className)
-	local targetClass = getClassFromName(className)
+function DbClass:belongsTo(callback,key,targetClass)
+	local targetClass = targetClass
+	if type(targetClass) == "string" then
+		targetClass = getClassFromName(targetClass)
+	end
 	local selector = targetClass:createSelector()
-	selector:where(self["foreign" .. className .. "ID"],"id"):get(callBack)
+	selector:where(self[key .. "ID"],"id"):get(callBack)
 end

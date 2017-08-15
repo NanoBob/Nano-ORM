@@ -8,6 +8,12 @@ function Database:constructor()
 	end
 end
 
+function Database:create(...)
+	outputServerLog(dbPrepareString(self.handle,...))
+	local query = dbQuery(self.handle,...)
+	dbPoll(query,-1)
+end
+
 function Database:exec(...)
 	outputServerLog(dbPrepareString(self.handle,...))
 	dbExec(self.handle,...)

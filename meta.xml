@@ -19,6 +19,7 @@
 	<script src="server/resource/classes/Player.lua" type="server"/>
 	<script src="server/resource/classes/Vehicle.lua" type="server"/>
 	<script src="server/resource/managers/PlayerManager.lua" type="server"/>
+	<script src="server/resource/managers/VehicleManager.lua" type="server"/>
 
 
 
