@@ -10,9 +10,8 @@ function Singleton:new(...)
 	return instance
 end
 
-function Singleton:delete()
+function Singleton:destroy()
 	self.class.instance = nil
-	delete(self)
-
+	destroy(self)
 end
 

@@ -10,15 +10,19 @@ function Vehicle:dataConstructor(success)
 	if success then
 		self:createElement()
 	else
-		outputDebugString("Failed to load vehicle with id " .. self.id)
+		outputDebugString("Failed to load vehicle")
 	end
 end
 
-function Vehicle:newConstructor(id,model,x,y,z,rx,ry,rz)
+function Vehicle:newConstructor(model,x,y,z,rx,ry,rz)
 	self.model = model
 	self.x, self.y, self.z = x, y, z
 	self.rx, self.ry, self.rz = rx, ry, rz
 	self:createElement()
+end
+
+function Vehicle:destructor()
+	destroyElement(self.element)
 end
 
 function Vehicle:createElement()

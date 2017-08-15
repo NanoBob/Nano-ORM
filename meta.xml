@@ -16,7 +16,9 @@
 	<script src="server/framework/classes/InstanceVariable.lua" type="server"/>
 	<script src="server/framework/classes/Selector.lua" type="server"/>
 	<script src="server/resource/classes/Core.lua" type="server"/>
+	<script src="server/resource/classes/Player.lua" type="server"/>
 	<script src="server/resource/classes/Vehicle.lua" type="server"/>
+	<script src="server/resource/managers/PlayerManager.lua" type="server"/>
 
 
 

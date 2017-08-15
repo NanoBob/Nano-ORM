@@ -1,11 +1,15 @@
 local classes = {}
 
-function getClassByName(name)
+function getClassFromName(name)
 	return classes[name]
 end
 
 function registerClass(class,name)
 	classes[name] = class
+end
+
+function nullFunc()
+
 end
 
 function inherit(baseClass,name)
@@ -15,7 +19,8 @@ function inherit(baseClass,name)
 	end
 	local class = { super = baseClass}
 	class.metatable = {
-		__index = baseClass
+		__index = baseClass,
+		__call = function(self,...) return self:new(...) end,
 	}
 	setmetatable(class,class.metatable)
 	if baseClass.onInherit then
@@ -36,6 +41,7 @@ function new(class,...)
 	end
 
 	callConstructors(instance,class,...)
+	class.instances[#class.instances + 1] = instance
 	return instance
 end
 
@@ -44,6 +50,7 @@ function newSingleton(class,...)
 	setmetatable(instance,{
 		__index = class,
 	})
+	class.instances[#class.instances + 1] = instance
 	
 	return instance
 end
@@ -63,8 +70,14 @@ function callConstructors(instance,class,...)
 end
 
 
-function delete(instance,...)
-	local current = class.super
+function destroy(instance,...)
+	for i,classInstance in pairs(instance.class.instances) do
+		if classInstance == instance then
+			table.remove(instance.class.instances,i)
+		end
+	end
+
+	local current = instance.class.super
 	while current do
 		if rawget(current,"subDestructor") then
 			current.subDestructor(instance,...)
@@ -72,7 +85,7 @@ function delete(instance,...)
 		current = current.super
 	end
 
-	if rawget(self, "destructor") then
-		self:destructor(...)
+	if rawget(instance.class, "destructor") then
+		instance:destructor(...)
 	end
 end

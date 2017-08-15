@@ -1,33 +1,55 @@
-Selector = inherit(Object)
+Selector = inherit(Object,"Selector")
 
 function Selector:constructor( targetClass )
 	self.targetClass = targetClass
 	self.whereClauses = {}
+	self.whereArgs = {}
+	if not targetClass.isDatabaseSetup then
+		targetClass:setupDatabase()
+	end
 end
 
 function Selector:where(...)
 	local args = { ... }
-	local whereString = ""
-	for _,arg in ipairs(args) do
-		whereString = whereString .. arg .. " "
+	if #args == 2 then
+		args[3] = args[2]
+		args[2] = "="
 	end
+	local field = args[1]
+	local operator = args[2]
+	local value = args[3]
+	
+	local whereString = field .. " " .. operator .. " ? "
+	
+	local clause = self.whereClauses[#self.whereClauses]
 	if #self.whereClauses == 0 then
 		self.whereClauses[1] = "WHERE "
+		clause = "WHERE "
+	else
+		clause = clause .. "AND "
 	end	
-	local clause = self.whereClauses[#self.whereClauses]
+
 	clause = clause .. whereString
 	self.whereClauses[#self.whereClauses] = clause
+	self.whereArgs[#self.whereArgs + 1] = value
 	return self
 end
 
 function Selector:orWhere(...)
 	local args = { ... }
-	local whereString = ""
-	for _,arg in ipairs(args) do
-		whereString = whereString .. arg .. " "
+	if #args == 2 then
+		args[3] = args[2]
+		args[2] = "="
 	end
+	local field = args[1]
+	local operator = args[2]
+	local value = args[3]
+	
+	local whereString = field .. " " .. operator .. " ? "
+
 	local clause = "OR " .. whereString
 	self.whereClauses[#self.whereClauses + 1] = clause
+	self.whereArgs[#self.whereArgs + 1] = value
 	return self
 end
 
@@ -37,25 +59,25 @@ function Selector:orderBy(...)
 	for _,arg in ipairs(args) do
 		orderString = orderString .. arg .. " "
 	end
-	if not self.orderBy then
-		self.orderBy = "ORDER BY "
+	if not self.orderByString then
+		self.orderByString = "ORDER BY "
 	end
-	self.orderBy = self.orderBy .. orderString
+	self.orderByString = self.orderByString .. orderString
 	return self
 end
 
 function Selector:limit(limit)
-	self.limit = limit
+	self.selectorLimit = limit
 	return self
 end
 
 function Selector:get(callback)
-	local query = "SELECT ";
-	for key,_ in pairs(targetClass.dbVariables) do 
+	local query = "SELECT id,";
+	for key,_ in pairs(self.targetClass.dbVariables) do 
 		query = query .. key ..","
 	end
 	query = query:sub(0,query:len() -1)
-	query = query .. string.format(" \nFROM `%s`",targetClass.tableName)
+	query = query .. string.format(" \nFROM `%s`",self.targetClass.tableName)
 
 	if limit then
 		query = query .. " \n LIMIT " .. tonumber(self.limit)
@@ -65,12 +87,29 @@ function Selector:get(callback)
 		query = query .. " \n " .. whereString
 	end
 
-	if self.orderBy then
-		query = query .. " \n " .. self.orderBy
+	if self.orderByString then
+		query = query .. " \n " .. self.orderByString
 	end
 
+	if self.selectorLimit then
+		query = query .. " \n LIMIT " .. self.selectorLimit
+	end
 
-	self.targetClass:getDatabase():query(self.loadData.bind(self),query)
+	self.targetClass:getDatabase():query(self.handleGet.bind(self,callback),query,unpack(self.whereArgs))
 
-	return true
+	return self
+end
+
+function Selector:handleGet(callback,data)
+	local data = data
+	if type(callback) == "table" then
+		data = callback
+	end	
+	local models = {}
+	for _,modelData in pairs(data) do
+		models[#models + 1] = self.targetClass:new({modelData})
+	end
+	if type(callback) == "function" then
+		callback(models)
+	end
 end

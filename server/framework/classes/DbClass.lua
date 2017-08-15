@@ -52,21 +52,18 @@ end
 
 DbClass.tableName = "DbClass"
 
-function DbClass:constructor(id,...)
+function DbClass:constructor(...)
 	getmetatable(self).__index = self.class.__index
 	rawset(self,"instanceVariables",{})
 	if not self.class.isDatabaseSetup then
 		self:setupDatabase()
 	end
-	self.id = id
 	local args = { ... }
-	if id and args[1] == nil then
-		self:requestData()
-	elseif id and type(args[1] == "table") then
+	if type(args[1]) == "table" and #args == 1 then
 		self:loadData(args[1])
 	else
 		self.exists = false
-		self:newConstructor(id,...)
+		self:newConstructor(...)
 	end
 end
 
@@ -80,9 +77,13 @@ function DbClass:dataConstructor() end
 -- creating the database
 
 function DbClass:setupDatabase()
-	self:getDatabase():exec(string.format("CREATE TABLE IF NOT EXISTS `%s` ( `id` INT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id) )",self.class.tableName))
-	for key,dataType in pairs(self.class.dbVariables) do
-		self:getDatabase():exec(string.format("ALTER TABLE `%s` ADD `%s` %s;",self.class.tableName,key,dataType))
+	local class = self
+	if not self.isClass then
+		class = self.class
+	end
+	self:getDatabase():exec(string.format("CREATE TABLE IF NOT EXISTS `%s` ( `id` INT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id) )",class.tableName))
+	for key,dataType in pairs(class.dbVariables) do
+		self:getDatabase():exec(string.format("ALTER TABLE `%s` ADD `%s` %s;",class.tableName,key,dataType))
 	end
 end
 
@@ -90,10 +91,19 @@ function DbClass:getDatabase()
 	return FrameworkCore:new().database
 end
 
+-- removing from database
+
+function DbClass:delete()
+	local query = "DELETE FROM " .. self.tableName
+	query = query .. " \n WHERE `id` = ?"
+	self:getDatabase():exec(query,self.id)
+	self:destroy()
+end
+
 -- loading from database
 
 function DbClass:requestData()
-	local query = "SELECT ";
+	local query = "SELECT  id,";
 	for key,_ in pairs(self.class.dbVariables) do 
 		query = query .. key ..","
 	end
@@ -147,35 +157,55 @@ function DbClass:saveVariable(key)
 	return var:toDatatype(datatype)
 end
 
-function DbClass:save()
+function DbClass:save(callback)
 	if self.exists then
 		self:update()
 	else
-		self:insert()
+		self:insert(callback)
 	end
 end
 
-function DbClass:insert()
+function DbClass:insert(callback)
 	local queryCache = {}
 	for key,_ in pairs(self.class.dbVariables) do
-		queryCache[key] = { self:saveVariable(key) }
+		queryCache[#queryCache + 1] = { key = key, var = { self:saveVariable(key) } }
 	end
 	local execArgs = {}
 
 	local query = "INSERT INTO `" .. self.tableName .. "` ("
-	for key,variable in pairs(queryCache) do
+	for _,value in ipairs(queryCache) do
+		local key = value.key
+		local variable = value.var
 		query = query .. string.format(" `%s`,",key)
 	end
 	if query == "INSERT INTO `" .. self.tableName .. "` (" then
 		return
 	end
 	query = query:sub(0,query:len()-1) .. ")\n VALUES("
-	for key,variable in pairs(queryCache) do
+	for _,value in ipairs(queryCache) do
+		local key = value.key
+		local variable = value.var
 		query = query .. " ?,"
-		execArgs[#execArgs + 1] = variable[1]
+		if variable[1] == nil then
+			execArgs[#execArgs + 1] = "NULL"
+		else
+			execArgs[#execArgs + 1] = variable[1]
+		end
 	end
 	query = query:sub(0,query:len()-1) .. ");"
-	self:getDatabase():exec(query,unpack(execArgs))
+	self:getDatabase():insert(self.handleInsert.bind(self,callback),query,unpack(execArgs))
+end
+
+function DbClass:handleInsert(callback,results)
+	local results = results
+	if type(callback) == "table" then
+		results = callback
+	end
+	local id = results[1][3]
+	self.id = id
+	if type(callback) == "function" then
+		callback(id)
+	end
 end
 
 function DbClass:update()
@@ -185,17 +215,16 @@ function DbClass:update()
 	end
 	local execArgs = {}
 
-	local query = "UPDATE `" .. self.tableName .. "`\n SET ("
+	local query = "UPDATE `" .. self.tableName .. "`\n SET "
 	for key,variable in pairs(queryCache) do
 		if variable[2] then
-			query = query .. " ? = ? "
-			execArgs[#execArgs + 1] = key
+			query = query .. " `" .. key .."` = ?, "
 			execArgs[#execArgs + 1] = variable[1]
 		end
 	end
-	if query ~= "UPDATE `" .. self.tableName .. "`\n SET (" then
-		query = query .. ");"
-		self:getDatabase():exec(query)
+	if query ~= "UPDATE `" .. self.tableName .. "`\n SET " then
+		query = query:sub(1,query:len() - 2) 
+		self:getDatabase():exec(query,unpack(execArgs))
 	end
 end
 
@@ -240,21 +269,47 @@ function DbClass:rotation()
 	self:registerDatabaseVariable("rz","float(7,4)")
 end
 
-function DbClass:rotation()
-	self:registerDatabaseVariable("rx","float(7,4)")
-	self:registerDatabaseVariable("ry","float(7,4)")
-	self:registerDatabaseVariable("rz","float(7,4)")
+function DbClass:foreign(class)
+	local key = class
+	if type(class == "table") then
+		key = class.className
+	end
+	self:registerDatabaseVariable("foreign" .. key .. "ID","INT(11)")
 end
 
-function DbClass:foreign()
-	self:registerDatabaseVariable("foreignType","text")
-	self:registerDatabaseVariable("foreignID","INT(11)")
+-- selector methods
+
+function DbClass:createSelector()
+	if self.isClass then
+		return Selector:new(self)
+	end
+	return Selector:new(self.class)	
+end
+
+function DbClass:select()
+	return self:createSelector()
+end
+
+function DbClass:find(callback,id)
+	local selector = self:createSelector()
+	return selector:where("id",id):get(callback)
+end
+
+function DbClass:all(callback)
+	local selector = self:createSelector()
+	return selector:get(callback)
 end
 
 -- relation methods
 
--- selector methods
+function DbClass:hasMany(callback,className)
+	local targetClass = getClassFromName(className)
+	local selector = targetClass:createSelector()
+	selector:where(self.id,"foreign" .. self.tableName .. "ID"):get(callBack)
+end
 
-function DbClass:select()
-	return Selector:new(self.class)
+function DbClass:belongsTo(callback,className)
+	local targetClass = getClassFromName(className)
+	local selector = targetClass:createSelector()
+	selector:where(self["foreign" .. className .. "ID"],"id"):get(callBack)
 end

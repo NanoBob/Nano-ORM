@@ -8,6 +8,7 @@ end
 
 function InstanceVariable:set(newValue)
 	self.value = newValue
+	self.changed = true
 end
 
 function InstanceVariable:get()

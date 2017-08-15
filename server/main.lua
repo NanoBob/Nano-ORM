@@ -1,10 +1,20 @@
+local main = {}
 
-
-addEventHandler("onResourceStart",getRootElement(),function()
+addEventHandler("onResourceStart",getResourceRootElement(),function()
 	if FrameworkCore then
-		FrameworkCore:new()
+		main.frameworkCore = FrameworkCore:new()
 	end
 	if Core then
-		Core:new()
+		main.core = Core:new()
 	end
-end)
+	outputServerLog("STARTING RESOURCE")
+
+	addEventHandler("onResourceStop",getResourceRootElement(),function()
+		if main.frameworkCore then
+			main.frameworkCore:destroy()
+		end
+		if main.core then
+			main.core:destroy()
+		end
+	end,true,"high+9999")
+end,true,"high+9999")
