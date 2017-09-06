@@ -18,7 +18,7 @@ function PlayerManager:playerLeft()
 end
 
 function PlayerManager:addPlayer(playerElement)
-	local player = Player:select():where("name",getPlayerName(playerElement)):get(self.registerPlayerCallback.bind(self,playerElement))
+	Player:select():where("name",getPlayerName(playerElement)):get(self.registerPlayerCallback.bind(self,playerElement))
 end
 
 function PlayerManager:removePlayer(playerElement)

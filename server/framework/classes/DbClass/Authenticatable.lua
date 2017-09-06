@@ -5,8 +5,6 @@ function Authenticatable:onInherit(newClass)
 	newClass:string("password")
 end
 
-
-
 function Authenticatable:setAuthenticationkey(key)
 	if self.isClass then
 		self.authenticationkey = key
@@ -24,6 +22,11 @@ function Authenticatable:handleAuthentication(password,callback,authenticatable)
 	if authenticatable == false then
 		callback(false)
 	end
+	passwordVerify(password,authenticatable.password,self.handlePasswordVerification.bind(self,callback))
+end
+
+function Authenticatable:handlePasswordVerification(callback,verified)
+	callback(verified)
 end
 
 function Authenticatable:hash(password)

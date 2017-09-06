@@ -2,7 +2,6 @@ DbClassManager = inherit(Singleton,"DbClassManager")
 
 function DbClassManager:constructor()
 	self.instances = {}
-
 end
 
 function DbClassManager:destructor()
