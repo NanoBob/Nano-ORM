@@ -4,4 +4,4 @@ Nano ORM is a framework to make creating MTA SA scripts easier, especially any d
 
 It's inspired by laravel, which is a PHP MVC framework.
 
-Documentation can be found at the (wiki)[https://github.com/NanoBob/Nano-ORM/wiki]
+Documentation can be found at the wiki ( https://github.com/NanoBob/Nano-ORM/wiki )
