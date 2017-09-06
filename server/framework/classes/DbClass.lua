@@ -81,11 +81,15 @@ function DbClass:dataConstructor() end
 
 -- creating the database
 
-function DbClass:setupDatabase()
+function DbClass:setupDatabase(override)
 	local class = self
 	if not self.isClass then
 		class = self.class
 	end
+	if class.isDatabaseSetup and not override then
+		return
+	end
+	class.isDatabaseSetup = true
 	self:getDatabase():create(string.format("CREATE TABLE IF NOT EXISTS `%s` ( `id` INT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id) )",class.tableName))
 	for key,dataType in pairs(class.dbVariables) do
 		self:getDatabase():create(string.format("ALTER TABLE `%s` ADD `%s` %s;",class.tableName,key,dataType))
