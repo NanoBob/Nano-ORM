@@ -71,7 +71,7 @@ function Selector:limit(limit)
 	return self
 end
 
-function Selector:get(callback)
+function Selector:generateQuery()
 	local query = "SELECT id,";
 	for key,_ in pairs(self.targetClass.dbVariables) do 
 		query = query .. key ..","
@@ -94,10 +94,37 @@ function Selector:get(callback)
 	if self.selectorLimit then
 		query = query .. " \n LIMIT " .. self.selectorLimit
 	end
+	return query
+end
+
+function Selector:get(callback)
+	local query = self:generateQuery()
 
 	self.targetClass:getDatabase():query(self.handleGet.bind(self,callback),query,unpack(self.whereArgs))
 
 	return self
+end
+
+function Selector:first(callback)
+	local query = self:generateQuery()
+
+	self.targetClass:getDatabase():query(self.handleFirst.bind(self,callback),query,unpack(self.whereArgs))
+
+	return self
+end
+
+function Selector:handleFirst(callback,data)
+	local data = data
+	if type(callback) == "table" then
+		data = callback
+	end	
+	local models = {}
+	for _,modelData in pairs(data) do
+		models[#models + 1] = self.targetClass:new({modelData})
+	end
+	if type(callback) == "function" then
+		callback(models[1] or false)
+	end
 end
 
 function Selector:handleGet(callback,data)

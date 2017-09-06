@@ -1,4 +1,4 @@
-Player = inherit(DbClass,"Player")
+Player = inherit(Authenticatable,"Player")
 Player.tableName = "player"
 
 Player:string("name")
