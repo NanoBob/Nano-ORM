@@ -309,7 +309,7 @@ end
 
 function DbClass:find(callback,id)
 	local selector = self:createSelector()
-	return selector:where("id",id):get(callback)
+	return selector:where("id",id):first(callback)
 end
 
 function DbClass:all(callback)
