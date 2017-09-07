@@ -1,5 +1,4 @@
 local main = {}
-
 addEventHandler("onResourceStart",getResourceRootElement(),function()
 	if FrameworkCore then
 		main.frameworkCore = FrameworkCore:new()
@@ -18,3 +17,5 @@ addEventHandler("onResourceStart",getResourceRootElement(),function()
 		end
 	end,true,"high+9999")
 end,true,"high+9999")
+
+

@@ -6,6 +6,7 @@ function DbClass:onInherit(newClass)
 	-- changing sub classes meta tables to support the custom instance variables
 
 	newClass.dbVariables = {}
+	newClass.instances = {}
 
 	newClass.__index = function(self,key)
 		--outputServerLog(toJSON(self))
@@ -71,6 +72,7 @@ end
 DbClass.subConstructor = DbClass.constructor
 
 function DbClass:subDestructor()
+	self.class.instances[self.id] = nil
 	DbClassManager:new():removeInstance(self)
 end
 
@@ -130,6 +132,7 @@ function DbClass:loadData(data)
 		for key,data in pairs(row) do
 			self:loadVariable(key,data)
 		end
+		self.class.instances[self.id] = self
 		if self.dataConstructor then
 			self:dataConstructor(true)
 		end
@@ -213,6 +216,7 @@ function DbClass:handleInsert(callback,results)
 	end
 	local id = results[1][3]
 	self.id = id
+	self.class.instances[self.id] = self
 	if type(callback) == "function" then
 		callback(self,id)
 	end
@@ -309,7 +313,7 @@ end
 
 function DbClass:find(callback,id)
 	local selector = self:createSelector()
-	return selector:where("id",id):first(callback)
+	return self.instances[id] or selector:where("id",id):first(callback)
 end
 
 function DbClass:all(callback)

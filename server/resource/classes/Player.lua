@@ -1,4 +1,6 @@
 Player = inherit(Authenticatable,"Player")
+Player:setAuthenticationkey("name")
+
 Player.tableName = "player"
 
 Player:string("name")

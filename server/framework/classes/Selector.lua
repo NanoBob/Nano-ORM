@@ -120,11 +120,11 @@ function Selector:handleFirst(callback,data)
 	end	
 	local models = {}
 	for _,modelData in pairs(data) do
-		models[#models + 1] = self.targetClass:new({modelData})
+		if type(callback) == "function" then
+			return callback(self.targetClass.instances[modelData.id] or self.targetClass:new({modelData}))
+		end
 	end
-	if type(callback) == "function" then
-		callback(models[1] or false)
-	end
+	callback(false)
 end
 
 function Selector:handleGet(callback,data)
@@ -134,7 +134,7 @@ function Selector:handleGet(callback,data)
 	end	
 	local models = {}
 	for _,modelData in pairs(data) do
-		models[#models + 1] = self.targetClass:new({modelData})
+		models[#models + 1] = self.targetClass.instances[modelData.id] or self.targetClass:new({modelData})
 	end
 	if type(callback) == "function" then
 		callback(models)

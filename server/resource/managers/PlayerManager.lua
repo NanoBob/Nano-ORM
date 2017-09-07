@@ -7,6 +7,19 @@ function PlayerManager:constructor()
 	end
 	addEventHandler("onPlayerJoin",getRootElement(),self.playerJoined.bind(self))
 	addEventHandler("onPlayerQuit",getRootElement(),self.playerLeft.bind(self))
+
+	--[[
+	Player:find(function(player) 
+		outputDebugString("Got player " .. player.name)
+		player:authenticate("SAES>NanoBob","test123",function(success)
+			outputDebugString("Authenticated: " .. tostring(success))
+		end)
+	end,1)
+	]]
+	AuthenticatablesManager:authenticate(Player,"SAES>NanoBob","test123",function(success,instance)
+		outputDebugString("Authenticated: " .. tostring(success))
+		outputDebugString("Instance: " .. (instance and tostring(instance.name) or "None")  )
+	end)
 end
 
 function PlayerManager:playerJoined()
