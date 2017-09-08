@@ -127,6 +127,12 @@ end
 
 function DbClass:loadData(data)
 	local row = data[1]
+	if self.exists then
+		for key,data in pairs(row) do
+			self:loadVariable(key,data)
+		end
+		return
+	end
 	if row then
 		self.exists = true
 		for key,data in pairs(row) do
