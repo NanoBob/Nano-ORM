@@ -18,10 +18,12 @@ function PlayerManager:constructor()
 		end)
 	end,1)
 	]]
+	--[[
 	AuthenticatablesManager:authenticate(Player,"SAES>NanoBob","test123",function(success,instance)
 		outputDebugString("Authenticated: " .. tostring(success))
 		outputDebugString("Instance: " .. (instance and tostring(instance.name) or "None")  )
 	end)
+	]]
 end
 
 function PlayerManager:playerJoined()
@@ -54,7 +56,6 @@ function PlayerManager:handleRegister(source,username,password,instance)
 		outputChatBox("An account with this username already exists.")
 	else
 		local player = Player:new(username,password,source)
-		player:save()
 	end
 end
 
@@ -63,9 +64,6 @@ function PlayerManager:login(source,_,username,password)
 end
 
 function PlayerManager:handleLogin(player,authenticated,instance)
-	outputDebugString("Player: " .. tostring(player))
-	outputDebugString("Authenticated: " .. tostring(authenticated))
-	outputDebugString("Instace: " .. tostring(instance))
 	if authenticated then
 		instance:linkElement(player)
 	elseif instance then

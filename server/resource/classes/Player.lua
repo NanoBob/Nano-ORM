@@ -17,6 +17,7 @@ function Player:newConstructor(username,password,element)
 	self.username = username
 	self:setPassword(password)
 	self:linkElement(element)
+	self:save()
 end
 
 function Player:destructor()
