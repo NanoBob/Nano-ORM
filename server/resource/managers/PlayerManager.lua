@@ -8,6 +8,8 @@ function PlayerManager:constructor()
 	addEventHandler("onPlayerJoin",getRootElement(),self.playerJoined.bind(self))
 	addEventHandler("onPlayerQuit",getRootElement(),self.playerLeft.bind(self))
 
+	addCommandHandler("_register",self.register.bind(self))
+	addCommandHandler("_login",self.login.bind(self))
 	--[[
 	Player:find(function(player) 
 		outputDebugString("Got player " .. player.name)
@@ -31,25 +33,42 @@ function PlayerManager:playerLeft()
 end
 
 function PlayerManager:addPlayer(playerElement)
-	Player:select():where("name",getPlayerName(playerElement)):get(self.registerPlayerCallback.bind(self,playerElement))
+	-- Player:select():where("name",getPlayerName(playerElement)):get(self.registerPlayerCallback.bind(self,playerElement))
 end
 
 function PlayerManager:removePlayer(playerElement)
 	local player = self.players[playerElement]
+	if not player then 
+		return 
+	end
 	player:destroy()
 	self.players[playerElement] = nil
 end
 
-function PlayerManager:registerPlayerCallback(targetPlayer,players)
-	if #players == 0 then
-		local player = Player:new(getPlayerName(targetPlayer))
-		player:save(self.newPlayerCallback.bind(self,player))
+function PlayerManager:register(source,_,username,password)
+	Player:select():where("username",username):first(self.handleRegister.bind(self,source,username,password)) 
+end
+
+function PlayerManager:handleRegister(source,username,password,instance)
+	if instance then
+		outputChatBox("An account with this username already exists.")
 	else
-		self.players[targetPlayer] = players[1]	
+		local player = Player:new(username,password,source)
+		player:save()
 	end
 end
 
-function PlayerManager:newPlayerCallback(targetPlayer,id)
-	self.players[targetPlayer.element] = targetPlayer
+function PlayerManager:login(source,_,username,password)
+	AuthenticatablesManager:authenticate(Player,username,password,self.handleLogin.bind(self,source))
 end
 
+function PlayerManager:handleLogin(player,authenticated,instance)
+	outputDebugString("Player: " .. tostring(player))
+	outputDebugString("Authenticated: " .. tostring(authenticated))
+	outputDebugString("Instace: " .. tostring(instance))
+	if authenticated then
+		instance:linkElement(player)
+	elseif instance then
+		instance:destroy()
+	end
+end
