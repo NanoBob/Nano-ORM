@@ -17,5 +17,3 @@ addEventHandler("onResourceStart",getResourceRootElement(),function()
 		end
 	end,true,"high+9999")
 end,true,"high+9999")
-
-

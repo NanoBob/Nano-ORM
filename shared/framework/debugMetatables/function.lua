@@ -6,10 +6,14 @@ debug.setmetatable(print,{
 			return function(...)
 				local args = {...}
 				return function(...)
-					for _,value in ipairs({...}) do
-						args[#args+1] = value
+					local newArgs = {}
+					for _,value in ipairs(args) do
+						newArgs[#newArgs+1] = value
 					end
-					self(unpack(args))
+					for _,value in ipairs({...}) do
+						newArgs[#newArgs+1] = value
+					end
+					self(unpack(newArgs))
 				end
 			end
 		else

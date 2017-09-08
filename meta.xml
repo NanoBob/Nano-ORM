@@ -1,6 +1,6 @@
 <meta>
 	<info author="NanoBob" type="script" name="NanoORM" version="1.0" />
-	<oop>false</oop>
+	<oop>true</oop>
 
 	<script src="shared/config/config.lua" type="shared"/>
 	<script src="shared/framework/lib.lua" type="shared"/>
