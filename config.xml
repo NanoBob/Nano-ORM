@@ -1,0 +1,19 @@
+<config>
+    <author>NanoBob</author>
+    <type>gamemode</type>
+    <version>1.0</version>
+    <min_mta_version client="1.5.1" server="1.5.1" />
+    <oop enabled="false"/>
+    <folders>
+        <folder path="files" type="file">
+            <exception path="/files/mods"/>
+        </folder>
+        <folder path="files/mods" type="file" download="false"></folder>
+        <folder path="shared" type="script" script-type="shared"></folder>
+        <folder path="server" type="script" script-type="server"></folder>
+        <folder path="client" type="script" script-type="client"></folder>
+    </folders>
+    <exports>
+
+    </exports>
+</config>
