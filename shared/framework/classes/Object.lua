@@ -15,3 +15,6 @@ function Object:destroy()
 	destroy(self)
 end
 
+function Object:isInstance()
+	return not self.isClass
+end

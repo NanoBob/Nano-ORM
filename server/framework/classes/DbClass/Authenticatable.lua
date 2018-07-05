@@ -15,8 +15,12 @@ function Authenticatable:setAuthenticationkey(key)
 end
 
 function Authenticatable:authenticate(authenticationKey,password,callback)
-	self.authenticationPass = password
-	passwordVerify(password,self.password,self.handlePasswordVerification.bind(self,callback))
+	if self:isInstance() then
+		self.authenticationPass = password
+		passwordVerify(password,self.password,self.handlePasswordVerification.bind(self,callback))
+	else
+		AuthenticatablesManager:authenticate(self,authenticationKey,password,callback)
+	end
 end
 
 function Authenticatable:handlePasswordVerification(callback,verified)
