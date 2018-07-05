@@ -134,9 +134,17 @@ function Selector:handleGet(callback,data)
 	end	
 	local models = {}
 	for _,modelData in pairs(data) do
-		models[#models + 1] = self.targetClass.instances[modelData.id] or self.targetClass:new({modelData})
+		models[#models + 1] = self:getExistingInstance(modelData.id) or self.targetClass:new({modelData})
 	end
 	if type(callback) == "function" then
 		callback(models)
+	end
+end
+
+function Selector:getExistingInstance(id)
+	for _, instance in pairs(self.targetClass.instances) do
+		if instance.id == id then
+			return instance
+		end
 	end
 end
