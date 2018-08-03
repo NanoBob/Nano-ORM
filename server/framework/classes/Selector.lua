@@ -11,7 +11,7 @@ end
 
 function Selector:where(...)
 	local args = { ... }
-	if #args == 2 then
+	if #args < 3 then
 		args[3] = args[2]
 		args[2] = "="
 	end
