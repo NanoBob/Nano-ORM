@@ -5,7 +5,7 @@ Vehicle.tableName = "vehicle"
 Vehicle:int("model")
 Vehicle:position()
 Vehicle:rotation()
-Vehicle:foreign("owner")
+Vehicle:foreign("owner", Player)
 
 function Vehicle:dataConstructor(success)
 	if success then
@@ -32,4 +32,7 @@ end
 
 function Vehicle:createElement()
 	self.element = createVehicle(self.model,self.x,self.y,self.z,self.rx,self.ry,self.rz)
+	self:owner(function(owner)
+		outputChatBox(tostring(owner))
+	end)
 end

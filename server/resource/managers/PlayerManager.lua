@@ -53,13 +53,13 @@ function PlayerManager:handleLogin(player,authenticated,instance)
 	if authenticated then
 		outputChatBox("You have succesfully logged in.", player)
 		instance:linkElement(player)
-		instance:has(function(data) 
+		instance:vehicles(function(data)
 			if #data == 0 then
 				local vehicle = Vehicle:new(542,3,3,3,0,0,0)
 				vehicle.ownerID = instance.id
 				vehicle:save()
 			end
-		end, "owner", Vehicle)
+		end)
 	elseif instance then
 		instance:destroy()
 	end

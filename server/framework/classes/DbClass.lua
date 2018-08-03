@@ -300,8 +300,17 @@ function DbClass:rgb(prefix)
 	self:registerDatabaseVariable(prefix .. "b","INT(3)")
 end
 
-function DbClass:foreign(key)
+function DbClass:foreign(key, targetClass)
 	self:registerDatabaseVariable(key .. "ID","INT(11)")
+	if targetClass then
+		self[key] = function(instance, callback)
+			instance:belongsTo(callback, key, targetClass)
+		end
+		outputChatBox(self.className:sub(1,1):lower()..self.className:sub(2) .. "s")
+		targetClass[self.className:sub(1,1):lower()..self.className:sub(2) .. "s"] = function(instance, callback)
+			instance:has(callback, key, self)
+		end
+	end
 end
 
 -- selector methods

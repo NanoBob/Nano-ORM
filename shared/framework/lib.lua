@@ -17,7 +17,7 @@ function inherit(baseClass,name)
 		outputDebugString("Attempt to inherit non table value",1)
 		error(debug.traceback())
 	end
-	local class = { super = baseClass}
+	local class = { super = baseClass, className = name}
 	class.metatable = {
 		__index = baseClass,
 		__call = function(self,...) return self:new(...) end,
