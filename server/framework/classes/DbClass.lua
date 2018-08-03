@@ -335,7 +335,7 @@ function DbClass:has(callback,key,targetClass)
 		targetClass = getClassFromName(targetClass)
 	end
 	local selector = targetClass:createSelector()
-	selector:where(self.id,key .. "ID"):get(callBack)
+	selector:where(key .. "ID", self.id):get(callback)
 end
 
 DbClass.hasMany = DbClass.has
@@ -346,5 +346,5 @@ function DbClass:belongsTo(callback,key,targetClass)
 		targetClass = getClassFromName(targetClass)
 	end
 	local selector = targetClass:createSelector()
-	selector:where(self[key .. "ID"],"id"):get(callBack)
+	selector:where("id", self[key .. "ID"]):get(callback)
 end

@@ -51,7 +51,11 @@ end
 
 function PlayerManager:handleLogin(player,authenticated,instance)
 	if authenticated then
+		outputChatBox("You have succesfully logged in.", player)
 		instance:linkElement(player)
+		instance:has(function(data) 
+			outputDebugString(toJSON(data))
+		end, "owner", Vehicle)
 	elseif instance then
 		instance:destroy()
 	end
