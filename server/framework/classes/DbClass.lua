@@ -306,7 +306,6 @@ function DbClass:foreign(key, targetClass)
 		self[key] = function(instance, callback)
 			instance:belongsTo(callback, key, targetClass)
 		end
-		outputChatBox(self.className:sub(1,1):lower()..self.className:sub(2) .. "s")
 		targetClass[self.className:sub(1,1):lower()..self.className:sub(2) .. "s"] = function(instance, callback)
 			instance:has(callback, key, self)
 		end
